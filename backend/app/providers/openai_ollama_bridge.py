@@ -1,8 +1,3 @@
-"""
-Normalização entre o contrato **OpenAI Chat Completions** (entrada/saída desta API)
-e o **Ollama** (`POST /v1/chat/completions`).
-"""
-
 from __future__ import annotations
 
 import time
@@ -15,13 +10,6 @@ from app.schemas.openai import ChatCompletionRequest
 def openai_chat_completion_request_to_ollama_payload(
     request: ChatCompletionRequest,
 ) -> dict[str, Any]:
-    """
-    **OpenAI (entrada da API) → corpo JSON** enviado ao Ollama.
-
-    Regras:
-    - ``stream`` deve ser ``False`` (streaming não suportado neste serviço).
-    - Demais campos: ``model_dump(exclude_none=True)`` + extras permitidos pelo schema.
-    """
     if request.stream:
         msg = "stream=true não é suportado; envie stream=false."
         raise ValueError(msg)
@@ -29,9 +17,6 @@ def openai_chat_completion_request_to_ollama_payload(
 
 
 def ollama_to_openai(resp: dict[str, Any], *, model: str) -> dict[str, Any]:
-    """
-    **JSON bruto do Ollama → resposta canônica OpenAI** (``id``, ``choices``, ``usage``, …).
-    """
     out_id = resp.get("id")
     if not isinstance(out_id, str) or not out_id.strip():
         out_id = f"chatcmpl-{uuid.uuid4().hex}"

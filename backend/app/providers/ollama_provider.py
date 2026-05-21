@@ -14,8 +14,6 @@ from app.providers.ollama_exceptions import (
 
 
 class OllamaProvider:
-    """Cliente HTTP para a API do Ollama (URL, timeout, parsing e erros)."""
-
     CHAT_COMPLETIONS_PATH = "/v1/chat/completions"
 
     def __init__(
@@ -28,7 +26,6 @@ class OllamaProvider:
         self._timeout = float(timeout_seconds if timeout_seconds is not None else OLLAMA_TIMEOUT_SECONDS)
 
     def chat_completions(self, payload: dict[str, Any]) -> dict[str, Any]:
-        """POST ``/v1/chat/completions`` no Ollama (compatível com OpenAI)."""
         return self._post_json(self.CHAT_COMPLETIONS_PATH, payload)
 
     def _post_json(self, path: str, body: dict[str, Any]) -> dict[str, Any]:

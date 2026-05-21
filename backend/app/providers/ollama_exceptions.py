@@ -1,14 +1,12 @@
 class OllamaProviderError(Exception):
-    """Erro base ao falar com o Ollama."""
+    pass
 
 
 class OllamaConnectionError(OllamaProviderError):
-    """Falha de rede / timeout antes de resposta HTTP."""
+    pass
 
 
 class OllamaHTTPError(OllamaProviderError):
-    """Ollama respondeu com status HTTP de erro."""
-
     def __init__(self, status_code: int, body: str) -> None:
         self.status_code = status_code
         self.body = body
@@ -16,4 +14,4 @@ class OllamaHTTPError(OllamaProviderError):
 
 
 class OllamaParseError(OllamaProviderError):
-    """Corpo da resposta não é JSON de objeto como esperado."""
+    pass
