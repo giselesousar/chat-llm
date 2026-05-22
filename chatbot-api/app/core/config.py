@@ -12,13 +12,9 @@ JWT_SECRET_KEY = os.environ.get("JWT_SECRET_KEY", "secret")
 JWT_ALGORITHM = "HS256"
 JWT_EXPIRE_MINUTES = int(os.environ.get("JWT_EXPIRE_MINUTES", "60"))
 
-CHAT_MAX_MESSAGES = int(os.environ.get("CHAT_MAX_MESSAGES", "50"))
-CHAT_MAX_CONTENT_CHARS = int(os.environ.get("CHAT_MAX_CONTENT_CHARS", "10000"))
-CHAT_MAX_CONTEXT_MESSAGES = int(os.environ.get("CHAT_MAX_CONTEXT_MESSAGES", "20"))
-CHAT_DEFAULT_SYSTEM_PROMPT = os.environ.get(
-    "CHAT_DEFAULT_SYSTEM_PROMPT",
-    "You are a helpful assistant.",
-)
+CHAT_MAX_MESSAGES = 50
+CHAT_MAX_CONTENT_CHARS = 10_000
+CHAT_DEFAULT_SYSTEM_PROMPT = "You are a helpful assistant."
 
 INFERENCE_BASE_URL = os.environ.get("INFERENCE_BASE_URL", "http://127.0.0.1:8001").rstrip("/")
 INFERENCE_API_KEY = os.environ.get("INFERENCE_API_KEY", "dev-inference-key")
