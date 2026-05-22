@@ -58,3 +58,6 @@ class SendMessageResponse(BaseModel):
     assistant_message: MessageRead
     latency_ms: int
     context_window_size: int
+    context_strategy: str = Field(
+        description="Estratégia de contexto usada nesta requisição.",
+    )

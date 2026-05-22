@@ -13,6 +13,7 @@ class ChatSession(Base):
     session_id: Mapped[str] = mapped_column(String(36), unique=True, index=True, nullable=False)
     user_id: Mapped[int] = mapped_column(ForeignKey("users.id"), index=True, nullable=False)
     channel: Mapped[str] = mapped_column(String(32), nullable=False, default="web")
+    conversation_summary: Mapped[str | None] = mapped_column(String(10000), nullable=True)
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True),
         default=lambda: datetime.now(UTC),

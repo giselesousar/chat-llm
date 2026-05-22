@@ -7,8 +7,14 @@ from typing import Any
 
 from sqlalchemy.orm import Session
 
-from app.core.config import CHAT_DEFAULT_SYSTEM_PROMPT, CHAT_MAX_CONTEXT_MESSAGES
+from app.chatbot_backend.context import (
+    ContextMessage,
+    ContextStrategy,
+    get_active_context_strategy_name,
+    get_context_strategy,
+)
 from app.chatbot_backend.inference_gateway import InferenceGateway
+from app.core.config import CHAT_DEFAULT_SYSTEM_PROMPT
 from app.models.chat_session import ChatSession
 from app.models.user import User
 from app.repositories.chat_repository import ChatRepository
@@ -28,10 +34,14 @@ class ChatService:
         self,
         db: Session,
         inference_gateway: InferenceGateway,
+        *,
+        context_strategy: ContextStrategy | None = None,
     ) -> None:
         self._db = db
         self._gateway = inference_gateway
         self._repo = ChatRepository(db)
+        self._strategy = context_strategy or get_context_strategy()
+        self._context_strategy_name = get_active_context_strategy_name()
 
     def handle(
         self,
@@ -46,8 +56,16 @@ class ChatService:
             channel=request.channel,
         )
 
-        context_messages, context_size = self._build_context(session_pk=session.id)
-        built_messages = self._build_prompt(request, context_messages)
+        system_prompt = self._resolve_system_prompt(request)
+        context_messages, context_size, includes_system = self._build_context(
+            session=session,
+            system_prompt=system_prompt,
+        )
+        built_messages = self._build_prompt(
+            request,
+            context_messages,
+            includes_system=includes_system,
+        )
 
         latest_user = self._latest_user_content(request.messages)
         inference_request = request.model_copy(update={"messages": built_messages})
@@ -76,6 +94,7 @@ class ChatService:
             channel=session.channel,
             latency_ms=latency_ms,
             context_window_size=context_size,
+            context_strategy=self._context_strategy_name,
             persisted=True,
         )
 
@@ -103,29 +122,48 @@ class ChatService:
             channel=channel,
         )
 
-    def _build_context(self, *, session_pk: int) -> tuple[list[ChatMessage], int]:
-        history = self._repo.list_recent_messages(
-            session_pk,
-            limit=CHAT_MAX_CONTEXT_MESSAGES,
-        )
-        history_messages = [
-            ChatMessage(role=m.role, content=m.content) for m in history
+    def _build_context(
+        self,
+        *,
+        session: ChatSession,
+        system_prompt: str,
+    ) -> tuple[list[ChatMessage], int, bool]:
+        rows = self._repo.list_messages(session.id)
+        history: list[ContextMessage] = [
+            {"role": m.role, "content": m.content} for m in rows  # type: ignore[misc]
         ]
-        return history_messages, len(history_messages)
+
+        result = self._strategy.build(
+            history,
+            system_prompt=system_prompt,
+            conversation_summary=session.conversation_summary,
+        )
+
+        if result.updated_summary is not None:
+            self._repo.update_conversation_summary(session.id, result.updated_summary)
+            session.conversation_summary = result.updated_summary
+
+        chat_messages = [
+            ChatMessage(role=m["role"], content=m["content"]) for m in result.messages
+        ]
+        return chat_messages, result.window_size, result.includes_system
 
     def _build_prompt(
         self,
         request: ChatCompletionRequest,
         context_messages: list[ChatMessage],
+        *,
+        includes_system: bool,
     ) -> list[ChatMessage]:
         system_from_request = [m for m in request.messages if m.role == "system"]
         latest_user = self._extract_latest_user_message(request.messages)
 
         merged: list[ChatMessage] = []
-        if system_from_request:
-            merged.extend(system_from_request)
-        elif CHAT_DEFAULT_SYSTEM_PROMPT.strip():
-            merged.append(ChatMessage(role="system", content=CHAT_DEFAULT_SYSTEM_PROMPT))
+        if not includes_system:
+            if system_from_request:
+                merged.extend(system_from_request)
+            elif CHAT_DEFAULT_SYSTEM_PROMPT.strip():
+                merged.append(ChatMessage(role="system", content=CHAT_DEFAULT_SYSTEM_PROMPT))
 
         merged.extend(context_messages)
 
@@ -140,6 +178,13 @@ class ChatService:
             merged.append(latest_user)
 
         return merged
+
+    @staticmethod
+    def _resolve_system_prompt(request: ChatCompletionRequest) -> str:
+        for m in reversed(request.messages):
+            if m.role == "system" and m.content.strip():
+                return m.content
+        return CHAT_DEFAULT_SYSTEM_PROMPT
 
     @staticmethod
     def _extract_latest_user_message(
@@ -170,7 +215,6 @@ class ChatService:
             return ""
         content = message.get("content")
         return content if isinstance(content, str) else ""
-
 
     def list_chats(self, user: User) -> list[ChatSession]:
         return self._repo.list_sessions_by_user(user.id)
@@ -210,4 +254,3 @@ class ChatService:
         session = self.get_chat(chat_id, user)
         messages = self._repo.list_messages(session.id)
         return session, messages
-

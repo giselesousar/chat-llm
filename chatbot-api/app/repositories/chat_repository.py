@@ -57,6 +57,15 @@ class ChatRepository:
             self._db.delete(msg)
         self._db.delete(session)
 
+    def update_conversation_summary(
+        self,
+        session_pk: int,
+        summary: str | None,
+    ) -> None:
+        session = self._db.get(ChatSession, session_pk)
+        if session is not None:
+            session.conversation_summary = summary
+
     def list_messages(
         self,
         session_pk: int,

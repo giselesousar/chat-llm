@@ -181,4 +181,5 @@ def send_message(
         assistant_message=MessageRead.model_validate(assistant_row),
         latency_ms=result.metadata.latency_ms,
         context_window_size=result.metadata.context_window_size,
+        context_strategy=result.metadata.context_strategy,
     )

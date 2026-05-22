@@ -202,6 +202,9 @@ class ChatCompletionMetadata(BaseModel):
         ge=0,
         description="Quantidade de mensagens do histórico incluídas no contexto.",
     )
+    context_strategy: str = Field(
+        description="Estratégia de contexto aplicada (CONTEXT_STRATEGY em settings.py).",
+    )
     persisted: bool = Field(
         description="Indica se user/assistant foram gravados no banco.",
     )
