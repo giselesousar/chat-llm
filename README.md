@@ -1,6 +1,6 @@
 # Chat-LLM
 
-Dois serviços FastAPI — **inference-api** (proxy OpenAI-like → Motor de inferência) e **chatbot-api** (usuários, chats, histórico).
+Serviços FastAPI — **inference-api** (proxy OpenAI-like → Motor de inferência) e **chatbot-api** (usuários, chats, histórico).
 
 ## Arquitetura
 
