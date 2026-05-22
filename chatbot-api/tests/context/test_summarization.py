@@ -1,4 +1,4 @@
-from app.chatbot_backend.context.summarization import (
+from app.context.summarization import (
     SummarizationStrategy,
     build_context,
     summarize,
@@ -19,11 +19,11 @@ def test_summarize_joins_first_four_contents() -> None:
 
 def test_build_context_with_many_messages_adds_summary_system(monkeypatch) -> None:
     monkeypatch.setattr(
-        "app.chatbot_backend.context.summarization.SUMMARY_THRESHOLD",
+        "app.context.summarization.SUMMARY_THRESHOLD",
         10,
     )
     monkeypatch.setattr(
-        "app.chatbot_backend.context.summarization.MAX_RECENT",
+        "app.context.summarization.MAX_RECENT",
         4,
     )
     messages = _messages(11)

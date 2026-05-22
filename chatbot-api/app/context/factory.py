@@ -1,11 +1,11 @@
 from __future__ import annotations
 
-from app.chatbot_backend.context.base import ContextStrategy
-from app.chatbot_backend.context.fixed_system import FixedSystemStrategy
-from app.chatbot_backend.context.settings import CONTEXT_STRATEGY
-from app.chatbot_backend.context.sliding_window import SlidingWindowStrategy
-from app.chatbot_backend.context.summarization import SummarizationStrategy
-from app.chatbot_backend.context.token_limit import TokenLimitStrategy
+from app.context.base import ContextStrategy
+from app.context.fixed_system import FixedSystemStrategy
+from app.context.settings import CONTEXT_STRATEGY
+from app.context.sliding_window import SlidingWindowStrategy
+from app.context.summarization import SummarizationStrategy
+from app.context.token_limit import TokenLimitStrategy
 
 _STRATEGIES: dict[str, type[ContextStrategy]] = {
     "sliding_window": SlidingWindowStrategy,

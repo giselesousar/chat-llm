@@ -11,8 +11,8 @@ from sqlalchemy.orm import Session, sessionmaker
 from sqlalchemy.pool import StaticPool
 
 from app.api.deps import get_chat_service, get_current_user, get_db, get_inference_gateway
-from app.chatbot_backend.chat_service import ChatService
-from app.chatbot_backend.inference_gateway import InferenceGateway
+from app.services.chat_service import ChatService
+from app.clients.inference_gateway import InferenceGateway
 from app.core.security import create_access_token, get_password_hash
 from app.db import Base
 from app.main import app

@@ -3,8 +3,8 @@ from typing import Annotated
 from fastapi import Depends
 from sqlalchemy.orm import Session
 
-from app.chatbot_backend.chat_service import ChatService
-from app.chatbot_backend.inference_gateway import InferenceGateway
+from app.services.chat_service import ChatService
+from app.clients.inference_gateway import InferenceGateway
 from app.clients.inference_client import InferenceHttpClient
 from app.core.security import get_current_user
 from app.db import get_db

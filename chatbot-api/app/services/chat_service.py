@@ -7,13 +7,13 @@ from typing import Any
 
 from sqlalchemy.orm import Session
 
-from app.chatbot_backend.context import (
+from app.context import (
     ContextMessage,
     ContextStrategy,
     get_active_context_strategy_name,
     get_context_strategy,
 )
-from app.chatbot_backend.inference_gateway import InferenceGateway
+from app.clients.inference_gateway import InferenceGateway
 from app.core.config import CHAT_DEFAULT_SYSTEM_PROMPT
 from app.models.chat_session import ChatSession
 from app.models.user import User

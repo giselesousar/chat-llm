@@ -1,10 +1,10 @@
 import pytest
 
-from app.chatbot_backend.context.factory import get_context_strategy
-from app.chatbot_backend.context.fixed_system import FixedSystemStrategy
-from app.chatbot_backend.context.sliding_window import SlidingWindowStrategy
-from app.chatbot_backend.context.summarization import SummarizationStrategy
-from app.chatbot_backend.context.token_limit import TokenLimitStrategy
+from app.context.factory import get_context_strategy
+from app.context.fixed_system import FixedSystemStrategy
+from app.context.sliding_window import SlidingWindowStrategy
+from app.context.summarization import SummarizationStrategy
+from app.context.token_limit import TokenLimitStrategy
 
 
 @pytest.mark.parametrize(

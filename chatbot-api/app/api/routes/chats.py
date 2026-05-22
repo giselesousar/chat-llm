@@ -1,7 +1,7 @@
 from fastapi import APIRouter, HTTPException, status
 
 from app.api.deps import ChatServiceDep, CurrentUserDep
-from app.chatbot_backend.chat_service import ChatService
+from app.services.chat_service import ChatService
 from app.clients.exceptions import InferenceConnectionError, InferenceHTTPError, InferenceParseError
 from app.core.exceptions import ChatNotFoundError
 from app.models.chat_message import ChatMessage as ChatMessageModel

@@ -91,7 +91,7 @@ def test_sliding_window_limits_context_window_size(client) -> None:
 def test_chat_service_uses_inference_client_not_httpx_directly() -> None:
     import inspect
 
-    from app.chatbot_backend.chat_service import ChatService
+    from app.services.chat_service import ChatService
 
     source = inspect.getsource(ChatService)
     assert "httpx" not in source

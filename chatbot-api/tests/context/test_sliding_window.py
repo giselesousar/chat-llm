@@ -1,4 +1,4 @@
-from app.chatbot_backend.context.sliding_window import (
+from app.context.sliding_window import (
     SlidingWindowStrategy,
     build_context,
 )

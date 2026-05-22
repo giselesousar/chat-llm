@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from app.chatbot_backend.context.types import ContextMessage, ContextResult
+from app.context.types import ContextMessage, ContextResult
 from app.core.config import CHAT_DEFAULT_SYSTEM_PROMPT
 
 MAX_HISTORY = 4

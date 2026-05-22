@@ -17,11 +17,11 @@ Arquivos:
 
 | Estratégia | Arquivo no projeto |
 |------------------|-------------------|
-| Janela deslizante | `app/chatbot_backend/context/sliding_window.py` |
-| Limite por tokens | `app/chatbot_backend/context/token_limit.py` |
-| System fixo + histórico | `app/chatbot_backend/context/fixed_system.py` |
-| Resumo de conversa | `app/chatbot_backend/context/summarization.py` |
-| Estratégia ativa | `app/chatbot_backend/context/settings.py` |
+| Janela deslizante | `app/context/sliding_window.py` |
+| Limite por tokens | `app/context/token_limit.py` |
+| System fixo + histórico | `app/context/fixed_system.py` |
+| Resumo de conversa | `app/context/summarization.py` |
+| Estratégia ativa | `app/context/settings.py` |
 
 ## Trocar estratégia
 

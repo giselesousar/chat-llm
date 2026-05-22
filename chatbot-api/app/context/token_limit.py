@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from app.chatbot_backend.context.types import ContextMessage, ContextResult
+from app.context.types import ContextMessage, ContextResult
 
 MAX_TOKENS = 100
 

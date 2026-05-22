@@ -1,4 +1,4 @@
-from app.chatbot_backend.context.fixed_system import (
+from app.context.fixed_system import (
     FixedSystemStrategy,
     build_context,
 )
@@ -6,7 +6,7 @@ from app.chatbot_backend.context.fixed_system import (
 
 def test_build_context_prepends_system_and_limits_history(monkeypatch) -> None:
     monkeypatch.setattr(
-        "app.chatbot_backend.context.fixed_system.MAX_HISTORY",
+        "app.context.fixed_system.MAX_HISTORY",
         4,
     )
     messages = [{"role": "user", "content": f"m{i}"} for i in range(8)]

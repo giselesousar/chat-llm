@@ -1,4 +1,4 @@
-from app.chatbot_backend.context.token_limit import (
+from app.context.token_limit import (
     TokenLimitStrategy,
     build_context,
     count_tokens,
@@ -11,7 +11,7 @@ def test_count_tokens_splits_on_whitespace() -> None:
 
 def test_build_context_stops_before_exceeding_max_tokens(monkeypatch) -> None:
     monkeypatch.setattr(
-        "app.chatbot_backend.context.token_limit.MAX_TOKENS",
+        "app.context.token_limit.MAX_TOKENS",
         9,
     )
     messages = [
