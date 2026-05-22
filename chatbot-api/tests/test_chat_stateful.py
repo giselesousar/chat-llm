@@ -78,6 +78,16 @@ def test_channel_on_create(client) -> None:
         assert session.channel == channel
 
 
+def test_sliding_window_limits_context_window_size(client) -> None:
+    chat_id = _create_chat(client)
+    for i in range(8):
+        _send_message(client, chat_id, f"Mensagem {i}")
+
+    body = _send_message(client, chat_id, "última")
+    assert body["context_window_size"] <= 6
+    assert body["context_strategy"] == "sliding_window"
+
+
 def test_chat_service_uses_inference_client_not_httpx_directly() -> None:
     import inspect
 
