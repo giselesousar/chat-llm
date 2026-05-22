@@ -6,7 +6,7 @@ Dois serviços FastAPI — **inference-api** (proxy OpenAI-like → Motor de inf
 
 ```mermaid
 flowchart LR
-  subgraph front [Frontend futuro]
+  subgraph front [Frontend]
     UI[Chat UI]
   end
   subgraph chatbot [chatbot-api :8000]
