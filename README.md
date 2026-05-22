@@ -120,7 +120,25 @@ cd ../chatbot-api && uv run pytest
 | `JWT_EXPIRE_MINUTES` | Validade do token | `60` |
 | `INFERENCE_BASE_URL` | URL da inference-api | `http://127.0.0.1:8001` |
 | `INFERENCE_API_KEY` | Mesma chave da inference-api | `dev-inference-key` |
-| `CHAT_MAX_CONTEXT_MESSAGES` | Janela de contexto | `20` |
+
+Limites de validação do payload (`CHAT_MAX_MESSAGES`, `CHAT_MAX_CONTENT_CHARS`) e o system prompt padrão estão como constantes em `chatbot-api/app/core/config.py`.
+
+## Gerenciamento de contexto conversacional
+
+O **chatbot-api** monta o prompt enviado à inference-api aplicando uma estratégia plugável em `app/chatbot_backend/context/`.
+```python
+# app/chatbot_backend/context/settings.py
+CONTEXT_STRATEGY = "token_limit"  # sliding_window | token_limit | fixed_system | summarization
+```
+
+| Estratégia | Ideia | Constante no arquivo |
+|------------|-------|----------------------|
+| `sliding_window` | Últimas N mensagens | `WINDOW_SIZE = 6` em `sliding_window.py` |
+| `token_limit` | Limite de tokens (proxy) | `MAX_TOKENS = 100` em `token_limit.py` |
+| `fixed_system` | System fixo + histórico | `MAX_HISTORY = 4` em `fixed_system.py` |
+| `summarization` | Resumo + mensagens recentes | `SUMMARY_THRESHOLD = 10` em `summarization.py` |
+
+A resposta de `POST /chats/{id}/messages` inclui `context_window_size` e `context_strategy`.
 
 ## API do chatbot (frontend)
 
