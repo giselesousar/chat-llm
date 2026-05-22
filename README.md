@@ -1,48 +1,146 @@
 # Chat-LLM
 
-Projeto de exemplo do curso: APIs de inferência e chatbots.
+Dois serviços FastAPI — **inference-api** (proxy OpenAI-like → Motor de inferência) e **chatbot-api** (usuários, chats, histórico).
 
-A API em `backend/` é FastAPI com autenticação e chat no estilo OpenAI, usando [Ollama](https://ollama.com/) como motor de inferência.
+## Arquitetura
+
+```mermaid
+flowchart LR
+  subgraph front [Frontend futuro]
+    UI[Chat UI]
+  end
+  subgraph chatbot [chatbot-api :8000]
+    Auth["/auth"]
+    Chats["/chats"]
+    ChatSvc[ChatService]
+    Repo[ChatRepository]
+  end
+  subgraph inference [inference-api :8001]
+    Completions["POST /v1/chat/completions"]
+    Svc[CompletionService]
+    Ollama[OllamaClient]
+  end
+  LLM[Ollama]
+  DB[(SQLite)]
+
+  UI -->|JWT| chatbot
+  chatbot -->|X-API-Key| inference
+  chatbot --> DB
+  Svc --> Ollama
+  Ollama --> LLM
+```
+
+### Autenticação
+
+| Serviço | Quem chama | Mecanismo |
+|---------|------------|-----------|
+| **chatbot-api** | Frontend / usuário | `Authorization: Bearer <JWT>` após `POST /auth/login` |
+| **inference-api** | chatbot-api (e scripts de lab) | `X-API-Key: <INFERENCE_API_KEY>` |
+
+O frontend **não** deve receber nem enviar `INFERENCE_API_KEY`.
+
+## Estrutura do repositório
+
+```
+chat-llm/
+  inference-api/    # Inferência stateless
+  chatbot-api/      # Auth, sessões, REST /chats
+  docker-compose.yml
+```
 
 ## Requisitos
 
-- Python 3.11 ou superior
-- [uv](https://docs.astral.sh/uv/) (recomendado) ou `pip`
+- Python 3.11+
+- [uv](https://docs.astral.sh/uv/)
+- [Ollama](https://ollama.com/) em execução (para inference-api)
 
 ## Instalação
 
-Com o diretório atual em `chat-llm/`:
-
 ```bash
-cd backend
-uv sync
+# inference-api
+cd inference-api && uv sync --extra dev
+
+# chatbot-api
+cd ../chatbot-api && uv sync --extra dev
 ```
 
-## Executar
+## Executar (desenvolvimento)
+
+Terminal 1 — inference-api (porta **8001**):
 
 ```bash
-cd backend
-uv run uvicorn main:app --reload
+cd inference-api
+export INFERENCE_API_KEY=dev-inference-key
+export LLM_BASE_URL=http://localhost:11434
+uv run uvicorn main:app --reload --port 8001
 ```
 
-(Os comandos acima pressupõem que, após o `cd`, você está em `chat-llm/backend/`.)
+Terminal 2 — chatbot-api (porta **8000**):
 
-- API: `http://127.0.0.1:8000`
-- Documentação interativa: `http://127.0.0.1:8000/docs`
-- Saúde: `GET /health`
+```bash
+cd chatbot-api
+export INFERENCE_BASE_URL=http://127.0.0.1:8001
+export INFERENCE_API_KEY=dev-inference-key
+export JWT_SECRET_KEY=secret
+uv run uvicorn main:app --reload --port 8000
+```
 
-## Variáveis de ambiente (opcionais)
+- Chatbot: http://127.0.0.1:8000/docs
+- Inferência: http://127.0.0.1:8001/docs
+
+Ou com Docker:
+
+```bash
+docker compose up --build
+```
+
+## Testes
+
+```bash
+cd inference-api && uv run pytest
+cd ../chatbot-api && uv run pytest
+```
+
+## Variáveis de ambiente
+
+### inference-api
 
 | Variável | Descrição | Padrão |
 |----------|-----------|--------|
-| `OLLAMA_BASE_URL` | URL do Ollama | `http://localhost:11434` |
-| `OLLAMA_TIMEOUT_SECONDS` | Timeout das chamadas ao Ollama | `120` |
-| `DATABASE_URL` | URL SQLAlchemy (ex.: SQLite) | `sqlite:///./data/app.db` |
-| `JWT_SECRET_KEY` | Chave para assinar tokens JWT | `secret` |
-| `JWT_EXPIRE_MINUTES` | Validade do token em minutos | `60` |
+| `LLM_BASE_URL` | URL do Ollama | `http://localhost:11434` |
+| `LLM_TIMEOUT_SECONDS` | Timeout HTTP | `120` |
+| `INFERENCE_API_KEY` | Chave exigida em `POST /v1/chat/completions` | `dev-inference-key` |
 
-O SQLite usa por padrão o arquivo em `backend/data/` (pastas `data/` e `*.db` costumam estar no `.gitignore`). Crie `data/` se necessário; na subida da aplicação as tabelas são criadas.
+### chatbot-api
 
-## Ollama
+| Variável | Descrição | Padrão |
+|----------|-----------|--------|
+| `DATABASE_URL` | SQLite/Postgres | `sqlite:///./data/app.db` |
+| `JWT_SECRET_KEY` | Assinatura JWT | `secret` |
+| `JWT_EXPIRE_MINUTES` | Validade do token | `60` |
+| `INFERENCE_BASE_URL` | URL da inference-api | `http://127.0.0.1:8001` |
+| `INFERENCE_API_KEY` | Mesma chave da inference-api | `dev-inference-key` |
+| `CHAT_MAX_CONTEXT_MESSAGES` | Janela de contexto | `20` |
 
-Tenha o [Ollama](https://ollama.com/) em execução localmente ou ajuste `OLLAMA_BASE_URL` para o host correto.
+## API do chatbot (frontend)
+
+| Método | Rota | Auth |
+|--------|------|------|
+| `POST` | `/auth/register`, `/auth/login` | Público |
+| `GET` | `/chats` | JWT |
+| `POST` | `/chats` | JWT |
+| `GET` | `/chats/{chat_id}` | JWT |
+| `DELETE` | `/chats/{chat_id}` | JWT |
+| `GET` | `/chats/{chat_id}/messages` | JWT |
+| `POST` | `/chats/{chat_id}/messages` | JWT |
+
+Fluxo típico: login → `POST /chats` → `POST /chats/{id}/messages` com o conteúdo da mensagem.
+
+## API de inferência
+
+| Método | Rota | Auth |
+|--------|------|------|
+| `GET` | `/health` | Público |
+| `POST` | `/v1/chat/completions` | `X-API-Key` |
+
+Contrato OpenAI-like puro (sem `session_id` / `channel`).

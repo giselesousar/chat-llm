@@ -1,0 +1,31 @@
+services:
+  inference-api:
+    build:
+      context: ./inference-api
+    ports:
+      - "8001:8001"
+    environment:
+      LLM_BASE_URL: http://host.docker.internal:11434
+      INFERENCE_API_KEY: ${INFERENCE_API_KEY:-dev-inference-key}
+    command: uv run uvicorn main:app --host 0.0.0.0 --port 8001
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
+  chatbot-api:
+    build:
+      context: ./chatbot-api
+    ports:
+      - "8000:8000"
+    environment:
+      DATABASE_URL: sqlite:///./data/app.db
+      JWT_SECRET_KEY: ${JWT_SECRET_KEY:-secret}
+      INFERENCE_BASE_URL: http://inference-api:8001
+      INFERENCE_API_KEY: ${INFERENCE_API_KEY:-dev-inference-key}
+    command: uv run uvicorn main:app --host 0.0.0.0 --port 8000
+    depends_on:
+      - inference-api
+    volumes:
+      - chatbot-data:/app/data
+
+volumes:
+  chatbot-data:
