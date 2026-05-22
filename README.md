@@ -125,9 +125,9 @@ Limites de validação do payload (`CHAT_MAX_MESSAGES`, `CHAT_MAX_CONTENT_CHARS`
 
 ## Gerenciamento de contexto conversacional
 
-O **chatbot-api** monta o prompt enviado à inference-api aplicando uma estratégia plugável em `app/chatbot_backend/context/`.
+O **chatbot-api** monta o prompt enviado à inference-api aplicando uma estratégia plugável em `app/context/`.
 ```python
-# app/chatbot_backend/context/settings.py
+# app/context/settings.py
 CONTEXT_STRATEGY = "token_limit"  # sliding_window | token_limit | fixed_system | summarization
 ```
 
